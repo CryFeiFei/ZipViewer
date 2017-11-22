@@ -4,7 +4,8 @@
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
-//    initTool();
+	m_qStyle = QApplication::style();
+	initTool();
 	initZipWidget();
 	initXMLWidget();
 	initMainWin();
@@ -32,6 +33,21 @@ void MainWindow::getTreeViewSelectedFileName(QModelIndex index)
 {
 	QString strFilePath = m_fileSystemModel->filePath(index);
 	return;
+}
+
+void MainWindow::openFile()
+{
+	QString strFilter = "*.pdf";
+	QString strDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+	m_strFileName = QFileDialog::getOpenFileName(this,"ZipViewer", strDir, strFilter);
+
+	if(m_strFileName.isEmpty())
+		return;
+}
+
+void MainWindow::closeApp()
+{
+	close();
 }
 
 void MainWindow::initXMLWidget()
@@ -65,7 +81,26 @@ void MainWindow::initMainWin()
 	mainSplitter->setHandleWidth(2);
 
 
-	this->setCentralWidget(mainSplitter);
+	setCentralWidget(mainSplitter);
+}
+
+void MainWindow::initTool()
+{
+	QToolBar* toolBar = new QToolBar(this);
+	addToolBar(Qt::TopToolBarArea, toolBar);
+
+	QAction* openAction = new QAction(this);
+	QIcon iconOpen = m_qStyle->standardIcon(QStyle::SP_DirOpenIcon);
+	openAction->setIcon(iconOpen);
+	QAction* exitAction = new QAction(this);
+	QIcon iconClose = m_qStyle->standardIcon(QStyle::SP_DirClosedIcon);
+	exitAction->setIcon(iconClose);
+	toolBar->addAction(openAction);
+	toolBar->addAction(exitAction);
+
+	connect(openAction,SIGNAL(triggered()), this, SLOT(openFile()));
+	connect(exitAction,SIGNAL(triggered()), this, SLOT(closeApp()));
+
 }
 
 MainWindow::~MainWindow()
