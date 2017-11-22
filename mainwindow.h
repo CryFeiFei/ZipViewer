@@ -13,27 +13,29 @@
 #include <QFile>
 #include <QTextStream>
 #include <QTextEdit>
+#include <QSplitter>
+#include <QSplitterHandle>
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+	MainWindow(QWidget *parent = 0);
+	~MainWindow();
 
 public slots:
-    void getTreeViewSelectedFileName(QModelIndex);
+	void getTreeViewSelectedFileName(QModelIndex);
 
 private:
-    void initZipWidget();
-    void initXMLWidget();
-    void initMainWin();
+	void initZipWidget();
+	void initXMLWidget();
+	void initMainWin();
 
 private:
-    QWidget* m_zipWidget;
-    QWidget* m_xmlWidget;
-    QFileSystemModel* m_fileSystemModel;
+	QWidget* m_zipWidget;
+	QWidget* m_xmlWidget;
+	QFileSystemModel* m_fileSystemModel;
 };
 
 #endif // MAINWINDOW_H
