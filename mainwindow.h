@@ -44,11 +44,15 @@ private:
 	void initTool();
 
 private:
-	QWidget* m_zipWidget;
 	QWidget* m_xmlWidget;
+	QWidget* m_zipWidget;
+	QTreeView* m_zipTreeView;
+
 	QFileSystemModel* m_fileSystemModel;
 	QStyle* m_qStyle;
 	QString m_strFileName;
+	QString m_strFullFileName;
+	QString m_strFilePath;
 };
 
 #endif // MAINWINDOW_H

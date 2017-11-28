@@ -14,17 +14,16 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::initZipWidget()
 {
 	m_zipWidget = new QWidget();
-
+	m_zipTreeView = new QTreeView(m_zipWidget);
 	m_fileSystemModel = new QFileSystemModel();
-	m_fileSystemModel->setRootPath(QDir::currentPath());
-	QTreeView* treeView = new QTreeView(m_zipWidget);
-	treeView->setModel(m_fileSystemModel);
-	treeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
 
-	connect(treeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(getTreeViewSelectedFileName(QModelIndex)));
+//	m_fileSystemModel->setRootPath(QDir::currentPath());
+//	m_zipTreeView->setModel(m_fileSystemModel);
+//	m_zipTreeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
+	connect(m_zipTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(getTreeViewSelectedFileName(QModelIndex)));
 
 	QHBoxLayout* layout = new QHBoxLayout();
-	layout->addWidget(treeView);
+	layout->addWidget(m_zipTreeView);
 	layout->setContentsMargins(1,1,1,1);
 	m_zipWidget->setLayout(layout);
 }
@@ -37,12 +36,24 @@ void MainWindow::getTreeViewSelectedFileName(QModelIndex index)
 
 void MainWindow::openFile()
 {
-	QString strFilter = "*.pdf";
+	QString strFilter = "*.docx";
 	QString strDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-	m_strFileName = QFileDialog::getOpenFileName(this,"ZipViewer", strDir, strFilter);
-
-	if(m_strFileName.isEmpty())
+	m_strFullFileName = QFileDialog::getOpenFileName(this,"ZipViewer", strDir, strFilter);
+	if(m_strFullFileName.isEmpty())
 		return;
+
+	int nCount = m_strFullFileName.length();
+	int nFlag = m_strFullFileName.lastIndexOf("\/");
+	m_strFilePath = m_strFullFileName.mid(0, nFlag);
+	m_strFileName = m_strFullFileName.mid(nFlag + 1, nCount);
+
+	// init zipWidget
+	QString strCurrentPath = QDir::currentPath();
+	m_fileSystemModel->setRootPath(QDir::currentPath());
+	m_zipTreeView->setModel(m_fileSystemModel);
+	m_zipTreeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
+
+	// init xmlwidget
 }
 
 void MainWindow::closeApp()
@@ -79,8 +90,6 @@ void MainWindow::initMainWin()
 	mainSplitter->addWidget(m_xmlWidget);
 	//分割条宽度
 	mainSplitter->setHandleWidth(2);
-
-
 	setCentralWidget(mainSplitter);
 }
 
