@@ -54,7 +54,7 @@ void MainWindow::showXml(const QModelIndex& index)
 
 void MainWindow::openFile()
 {
-	QString strFilter/* = "*.docx"*/;
+	QString strFilter = "*.docx *.pptx *.xlsx *.ofd";
 	QString strDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	m_strFullFileName = QFileDialog::getOpenFileName(this,"ZipViewer", strDir, strFilter);
 	if(m_strFullFileName.isEmpty())
