@@ -17,6 +17,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h
 
-INCLUDEPATH += $$PWD/quazip/include
-LIBS += -L$$PWD/quazip/lib -lquazip
-LIBS += -L$$PWD/zip -lzlib1
+INCLUDEPATH += $$PWD/3rdparty/quazip/include
+LIBS += -L$$PWD/3rdparty/quazip/lib -lquazip
+LIBS += -L$$PWD/3rdparty/zip -lzlib1

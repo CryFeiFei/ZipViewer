@@ -1,50 +1,5 @@
 #include "mainwindow.h"
 
-bool MainWindow::_deleteDir(const QString &dirName)
-{
-	QDir directory(dirName);
-	if (!directory.exists())
-	{
-		return true;
-	}
-
-	QString srcPath = QDir::toNativeSeparators(dirName);
-	if (!srcPath.endsWith(QDir::separator()))
-		srcPath += QDir::separator();
-
-	QStringList fileNames = directory.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
-	bool error = false;
-	for (QStringList::size_type i=0; i != fileNames.size(); ++i)
-	{
-		QString filePath = srcPath + fileNames.at(i);
-		QFileInfo fileInfo(filePath);
-		if (fileInfo.isFile() || fileInfo.isSymLink())
-		{
-			QFile::setPermissions(filePath, QFile::WriteOwner);
-			if (!QFile::remove(filePath))
-			{
-//				qDebug() << "remove file" << filePath << " faild!";
-				error = true;
-			}
-		}
-		else if (fileInfo.isDir())
-		{
-			if (!_deleteDir(filePath))
-			{
-				error = true;
-			}
-		}
-	}
-
-	if (!directory.rmdir(QDir::toNativeSeparators(directory.path())))
-	{
-//		qDebug() << "remove dir" << directory.path() << " faild!";
-		error = true;
-	}
-
-	return !error;
-}
-
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 {
@@ -53,6 +8,13 @@ MainWindow::MainWindow(QWidget *parent)
 	initZipWidget();
 	initXMLWidget();
 	initMainWin();
+	resize(500, 500);
+}
+
+MainWindow::~MainWindow()
+{
+	m_file->close();
+	_deleteDir(m_strNewFolder);
 }
 
 void MainWindow::initZipWidget()
@@ -84,7 +46,7 @@ void MainWindow::showXml(const QModelIndex& index)
 
 	QFont font;
 	font.setFamily("Consolas");
-	font.setPointSize(14);
+	font.setPointSize(16);
 	m_xmlTextEdit->setFont(font);
 
 	return;
@@ -138,7 +100,6 @@ void MainWindow::initAterOpen()
 
 void MainWindow::closeApp()
 {
-//	m_Dir.rmdir(m_strNewFolder);
 	close();
 }
 
@@ -181,10 +142,49 @@ void MainWindow::initTool()
 
 	connect(openAction,SIGNAL(triggered()), this, SLOT(openFile()));
 	connect(exitAction,SIGNAL(triggered()), this, SLOT(closeApp()));
-
 }
 
-MainWindow::~MainWindow()
+bool MainWindow::_deleteDir(const QString &dirName)
 {
-	_deleteDir(m_strNewFolder);
+	QDir directory(dirName);
+	if (!directory.exists())
+	{
+		return true;
+	}
+
+	QString srcPath = QDir::toNativeSeparators(dirName);
+	if (!srcPath.endsWith(QDir::separator()))
+		srcPath += QDir::separator();
+
+	QStringList fileNames = directory.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
+	bool error = false;
+	for (QStringList::size_type i=0; i != fileNames.size(); ++i)
+	{
+		QString filePath = srcPath + fileNames.at(i);
+		QFileInfo fileInfo(filePath);
+		if (fileInfo.isFile() || fileInfo.isSymLink())
+		{
+			QFile::setPermissions(filePath, QFile::WriteOwner);
+			if (!QFile::remove(filePath))
+			{
+//				qDebug() << "remove file" << filePath << " faild!";
+				error = true;
+			}
+		}
+		else if (fileInfo.isDir())
+		{
+			if (!_deleteDir(filePath))
+			{
+				error = true;
+			}
+		}
+	}
+
+	if (!directory.rmdir(QDir::toNativeSeparators(directory.path())))
+	{
+//		qDebug() << "remove dir" << directory.path() << " faild!";
+		error = true;
+	}
+
+	return !error;
 }
