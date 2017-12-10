@@ -82,11 +82,10 @@ void MainWindow::showXml(const QModelIndex& index)
 	m_xmlTextEdit->setText(in.readAll());
 	m_file->close();
 
-	m_xmlTextEdit->setFontFamily("Consolas");
-	m_xmlTextEdit->setFontPointSize(14);
-
-//	QTextCursor* pTextCursor = m_xmlTextEdit->textCursor();
-//	QTextDocument* pDocument = m_xmlTextEdit->document();
+	QFont font;
+	font.setFamily("Consolas");
+	font.setPointSize(14);
+	m_xmlTextEdit->setFont(font);
 
 	return;
 }
