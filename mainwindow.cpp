@@ -1,5 +1,49 @@
 #include "mainwindow.h"
 
+bool MainWindow::_deleteDir(const QString &dirName)
+{
+	QDir directory(dirName);
+	if (!directory.exists())
+	{
+		return true;
+	}
+
+	QString srcPath = QDir::toNativeSeparators(dirName);
+	if (!srcPath.endsWith(QDir::separator()))
+		srcPath += QDir::separator();
+
+	QStringList fileNames = directory.entryList(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
+	bool error = false;
+	for (QStringList::size_type i=0; i != fileNames.size(); ++i)
+	{
+		QString filePath = srcPath + fileNames.at(i);
+		QFileInfo fileInfo(filePath);
+		if (fileInfo.isFile() || fileInfo.isSymLink())
+		{
+			QFile::setPermissions(filePath, QFile::WriteOwner);
+			if (!QFile::remove(filePath))
+			{
+//				qDebug() << "remove file" << filePath << " faild!";
+				error = true;
+			}
+		}
+		else if (fileInfo.isDir())
+		{
+			if (!_deleteDir(filePath))
+			{
+				error = true;
+			}
+		}
+	}
+
+	if (!directory.rmdir(QDir::toNativeSeparators(directory.path())))
+	{
+//		qDebug() << "remove dir" << directory.path() << " faild!";
+		error = true;
+	}
+
+	return !error;
+}
 
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -17,10 +61,7 @@ void MainWindow::initZipWidget()
 	m_zipTreeView = new QTreeView(m_zipWidget);
 	m_fileSystemModel = new QFileSystemModel();
 
-//	m_fileSystemModel->setRootPath(QDir::currentPath());
-//	m_zipTreeView->setModel(m_fileSystemModel);
-//	m_zipTreeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
-	connect(m_zipTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(getTreeViewSelectedFileName(QModelIndex)));
+	connect(m_zipTreeView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(showXml(const QModelIndex&)));
 
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->addWidget(m_zipTreeView);
@@ -28,9 +69,25 @@ void MainWindow::initZipWidget()
 	m_zipWidget->setLayout(layout);
 }
 
-void MainWindow::getTreeViewSelectedFileName(QModelIndex index)
+void MainWindow::showXml(const QModelIndex& index)
 {
+	if (!index.isValid())
+		return;
+
 	QString strFilePath = m_fileSystemModel->filePath(index);
+
+	m_file->setFileName(strFilePath);
+	m_file->open(QIODevice::ReadOnly | QIODevice::Text);
+	QTextStream in(m_file);
+	m_xmlTextEdit->setText(in.readAll());
+	m_file->close();
+
+	m_xmlTextEdit->setFontFamily("Consolas");
+	m_xmlTextEdit->setFontPointSize(14);
+
+//	QTextCursor* pTextCursor = m_xmlTextEdit->textCursor();
+//	QTextDocument* pDocument = m_xmlTextEdit->document();
+
 	return;
 }
 
@@ -78,33 +135,22 @@ void MainWindow::initAterOpen()
 	m_fileSystemModel->setRootPath(m_strNewFolder);
 	m_zipTreeView->setModel(m_fileSystemModel);
 	m_zipTreeView->setRootIndex(m_fileSystemModel->index(m_strNewFolder));
-
-	// init xmlwidget
-
 }
 
 void MainWindow::closeApp()
 {
+//	m_Dir.rmdir(m_strNewFolder);
 	close();
 }
 
 void MainWindow::initXMLWidget()
 {
 	m_xmlWidget = new QWidget();
-	QTextEdit* xmlEdit = new QTextEdit();
-
-	//xml reader
-	QString strPathFile = "D:\\QTProject\\OFDReader\\ofd_file\\OFD.xml";
-	QFile file(strPathFile);
-	file.open(QIODevice::ReadOnly | QIODevice::Text);
-	QTextStream in(&file);
-	xmlEdit->setText(in.readAll());
-	xmlEdit->setFontFamily("Consolas");
-	file.close();
-
+	m_xmlTextEdit = new QTextEdit();
+	m_file = new QFile();
 
 	QHBoxLayout* layout = new QHBoxLayout();
-	layout->addWidget(xmlEdit);
+	layout->addWidget(m_xmlTextEdit);
 	layout->setContentsMargins(1,1,1,1);
 	m_xmlWidget->setLayout(layout);
 
@@ -141,5 +187,5 @@ void MainWindow::initTool()
 
 MainWindow::~MainWindow()
 {
-
+	_deleteDir(m_strNewFolder);
 }

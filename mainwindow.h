@@ -36,7 +36,7 @@ public:
 	~MainWindow();
 
 public slots:
-	void getTreeViewSelectedFileName(QModelIndex);
+	void showXml(const QModelIndex&);
 	void openFile();
 	void closeApp();
 
@@ -48,7 +48,12 @@ private:
 	void initAterOpen();
 
 private:
+	bool _deleteDir(const QString &dirName);
+
+private:
 	QWidget* m_xmlWidget;
+	QTextEdit* m_xmlTextEdit;
+
 	QWidget* m_zipWidget;
 	QTreeView* m_zipTreeView;
 
@@ -63,6 +68,7 @@ private:
 	QString m_strNewFolder;
 
 	QDir m_Dir;
+	QFile* m_file;
 };
 
 #endif // MAINWINDOW_H
