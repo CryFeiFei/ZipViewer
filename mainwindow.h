@@ -23,6 +23,9 @@
 #include <QFileDialog>
 #include <QString>
 #include <QDesktopServices>
+#include <QMessageBox>
+
+#include "JlCompress.h"
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +45,7 @@ private:
 	void initXMLWidget();
 	void initMainWin();
 	void initTool();
+	void initAterOpen();
 
 private:
 	QWidget* m_xmlWidget;
@@ -50,9 +54,15 @@ private:
 
 	QFileSystemModel* m_fileSystemModel;
 	QStyle* m_qStyle;
-	QString m_strFileName;
-	QString m_strFullFileName;
-	QString m_strFilePath;
+
+	QString m_strFullFileName;  //文件路径+名字
+	QString m_strFilePath;   //文件路径
+	QString m_strFileName;   //带后缀的名字
+	QString m_strName;   //不带后缀的名字
+
+	QString m_strNewFolder;
+
+	QDir m_Dir;
 };
 
 #endif // MAINWINDOW_H

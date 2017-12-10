@@ -20,7 +20,7 @@ void MainWindow::initZipWidget()
 //	m_fileSystemModel->setRootPath(QDir::currentPath());
 //	m_zipTreeView->setModel(m_fileSystemModel);
 //	m_zipTreeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
-	connect(m_zipTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(getTreeViewSelectedFileName(QModelIndex)));
+	connect(m_zipTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(getTreeViewSelectedFileName(QModelIndex)));
 
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->addWidget(m_zipTreeView);
@@ -36,24 +36,51 @@ void MainWindow::getTreeViewSelectedFileName(QModelIndex index)
 
 void MainWindow::openFile()
 {
-	QString strFilter = "*.docx";
+	QString strFilter/* = "*.docx"*/;
 	QString strDir = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	m_strFullFileName = QFileDialog::getOpenFileName(this,"ZipViewer", strDir, strFilter);
 	if(m_strFullFileName.isEmpty())
 		return;
 
 	int nCount = m_strFullFileName.length();
+	//qt内部默认是符号/
 	int nFlag = m_strFullFileName.lastIndexOf("\/");
 	m_strFilePath = m_strFullFileName.mid(0, nFlag);
 	m_strFileName = m_strFullFileName.mid(nFlag + 1, nCount);
 
-	// init zipWidget
-	QString strCurrentPath = QDir::currentPath();
-	m_fileSystemModel->setRootPath(QDir::currentPath());
+	nFlag = m_strFileName.indexOf(".");
+	m_strName = m_strFileName.mid(0, nFlag);
+
+	// init after open
+	initAterOpen();
+}
+
+void MainWindow::initAterOpen()
+{
+	// 创建新的文件夹并解压
+	m_strNewFolder = m_strFilePath + "\/" + m_strName;
+	bool bIsExists = m_Dir.exists(m_strNewFolder);
+	if (!bIsExists)
+	{
+		if (!m_Dir.mkdir(m_strNewFolder))
+		{
+			QMessageBox::question(this, "warnning", "创建缓存失败");
+			return;
+		}
+	}
+	else
+	{
+		//已经存在咋办？
+	}
+
+	// 解压文件
+	JlCompress::extractDir(m_strFullFileName, m_strNewFolder + "\/");
+	m_fileSystemModel->setRootPath(m_strNewFolder);
 	m_zipTreeView->setModel(m_fileSystemModel);
-	m_zipTreeView->setRootIndex(m_fileSystemModel->index(QDir::currentPath()));
+	m_zipTreeView->setRootIndex(m_fileSystemModel->index(m_strNewFolder));
 
 	// init xmlwidget
+
 }
 
 void MainWindow::closeApp()
